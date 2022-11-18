@@ -1,11 +1,12 @@
-import { Keyboard, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Button } from 'react-native';
 import React, { useLayoutEffect, useState } from 'react';
 import { Avatar } from 'react-native-elements';
 import { deafultPicURL } from '../utils';
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from 'expo-status-bar';
-import { addDoc, collection, onSnapshot, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, serverTimestamp, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+
 
 const ChatScreen = ( { navigation, route }) => {
   const [input, setInput] = useState('');
@@ -93,6 +94,17 @@ const ChatScreen = ( { navigation, route }) => {
         <ScrollView contentContainerStyle={{paddingTop: 15}}>
           {messages.map(({id, data}) => (
              data.email === auth.currentUser.email ? (
+              <View style={styles.deleteMessage}>
+
+              <Button
+                onPress={(e) => {
+                const docDel = doc(db,'chats',route.params.id,'messages',id);
+                deleteDoc(docDel).then(() => {console.log('Message has been deleted');}).catch((err) => console.log(err));
+                }}
+                title="delete"
+                color="#ffc0cb"
+              />
+            
                 <View key={id} style={styles.userMessage}>
                   <Avatar 
                   rounded 
@@ -109,6 +121,7 @@ const ChatScreen = ( { navigation, route }) => {
                   size={30}/>
                   <Text style={styles.userText}>{data.message}</Text>
                 </View>
+              </View>
              ) : (
                 <View key={id} style={styles.senderMessage}>
                   <Text style={styles.senderText}>{data.message}</Text>
@@ -156,6 +169,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     maxWidth: "80%",
     position: "relative",
+  },
+
+  deleteMessage:{
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+
   },
 
   senderMessage: {
